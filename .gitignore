@@ -46,7 +46,7 @@ Thumbs.db
 .firebaserc
 firebase.json
 
-esp.32.svd
+esp32.svd
 debug.cfg
 debug_custom.json
 
