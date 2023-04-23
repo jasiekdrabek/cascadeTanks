@@ -45,6 +45,7 @@ bool drawTank = true;
 bool drawRect = true;
 
 //variables for time mesurements
+unsigned long startTaskTime = 0;
 unsigned long displayWaterLevelTime = millis();
 unsigned long calculateWaterFlowTime = millis();
 unsigned long calculateWaterFlowTime2 = millis();
@@ -217,6 +218,7 @@ void pressNextBtn(Event& e){
       tankC.waterHeight = 0;
       tankC.valveOut = 0;
       cascadeType = 2;
+      startTaskTime = millis();
     }
     return;
   }   
@@ -279,7 +281,8 @@ void pressNextBtn(Event& e){
     nextBtn.setLabel("");
     M5.lcd.setCursor(0,20);
     M5.Lcd.clearDisplay(); 
-    drawBtns = true; 
+    drawBtns = true;
+    startTaskTime = millis(); 
   }
 }
 
@@ -682,11 +685,13 @@ void taskCalculateWaterFlow(void* pvParameters){
       calculateWaterFlowTime = millis();
       if(!isReset){
         tankWaterFlow(&tankA);
+        //Serial.printf("%d,%f,%d \n", millis() - startTaskTime, tankA.waterHeight, tankA.state); //for tests
         tankAlarm(&tankA, 0.9, 0.7);
         if(cascadeType == 1){
            tankB.waterSupplyValve1In = tankA.waterDrain;                     
         }        
         tankWaterFlow(&tankB);
+        //Serial.printf("%d,%f,%d \n", millis() - startTaskTime, tankB.waterHeight, tankB.state); //for tests
         tankAlarm(&tankB, 0.9, 0.7);
         if(cascadeType == 1){
            tankC.waterSupplyValve1In = tankB.waterDrain;
@@ -698,6 +703,7 @@ void taskCalculateWaterFlow(void* pvParameters){
            tankC.waterSupply = tankC.waterSupplyValve1In + tankC.waterSupplyValve2In;                     
         }
         tankWaterFlow(&tankC); 
+        //Serial.printf("%d,%f,%d \n", millis() - startTaskTime, tankC.waterHeight, tankC.state); //for tests
         tankAlarm(&tankC, 0.9, 0.7);
       }                 
     }
@@ -991,6 +997,7 @@ void setup() {
       NULL,  // Task handler.
       0);    // Core where the task should run.    
   M5.Lcd.setTextColor(WHITE, BLACK);
+  Serial.begin(9600);
 }
 
 void loop() {
