@@ -54,6 +54,7 @@ int alarmCount = 0;
 
 int currentProperty = 1; //1-> wysokosc, 2->szerokosc, 3-> dlugosc, 4-> wysokosc wody, 5->doplyw wody, 6->powierzchnia odplywu, 7-> ilosc wody, 8-> odplyw wody  
 int cascadeType; // 1- A->B->C ; 2 - A->C B->C 
+const char* propertyNames[8]={"wysokosc", "szerokosc", "dlugosc", "wysokosc wody", "doplyw", "powierzchnia", "ilosc wody", "odplyw"};
 int page = 1; // 1->mainscreen; 2->detailscreen
 int mode = 1; // 1 - carries out task from attached file "wyklad_USCtankC.valve1In_.pdf"; 2- carries out task from attached file "Tryb pracy 2.pdf"; 3 - user sets all parameters by himself/herself   
 
@@ -530,94 +531,55 @@ void displayCurrentProperty(){
   if(page == 1) M5.Lcd.setTextSize(1); 
   if(page == 2) M5.Lcd.setTextSize(2);
   
+  M5.Lcd.printf(propertyNames[currentProperty - 1]);   
+  if(page == 2 && currentProperty >= 1 && currentProperty <= 4) M5.Lcd.printf("(m)");
+  if(page == 2 && (currentProperty == 5 || currentProperty == 8)) M5.Lcd.printf("(m^3/s)"); 
+  if(page == 2 && currentProperty == 6) M5.Lcd.printf("(m^2)");
+  if(page == 2 && currentProperty == 7) M5.Lcd.printf("(m^3)");  
+  if(page == 1) M5.Lcd.setCursor(205, 160);
+  if(page == 2) M5.Lcd.setCursor(80, 140);
+  M5.Lcd.setTextSize(2); 
+  if(page == 2) M5.Lcd.setTextSize(3);
   if(currentProperty == 1){
-    M5.Lcd.printf("wysokosc");   
-    if(page == 2) M5.Lcd.printf("(m)"); 
-    if(page == 1) M5.Lcd.setCursor(205, 160);
-    if(page == 2) M5.Lcd.setCursor(80, 140);
-    M5.Lcd.setTextSize(2); 
-    if(page == 2) M5.Lcd.setTextSize(3);
     if(currentSetTank =="zbiornik A") M5.Lcd.printf("%.0f",tankA.height);
     if(currentSetTank =="zbiornik B") M5.Lcd.printf("%.0f",tankB.height);
     if(currentSetTank =="zbiornik C") M5.Lcd.printf("%.0f",tankC.height); 
     if(page == 1) M5.Lcd.printf(" m");      
-  }
-  if(currentProperty == 2){     
-    M5.Lcd.printf("szerokosc");  
-    if(page == 2) M5.Lcd.printf("(m)");  
-    if(page == 1) M5.Lcd.setCursor(205, 160);
-    if(page == 2) M5.Lcd.setCursor(80, 140);
-    M5.Lcd.setTextSize(2); 
-    if(page == 2) M5.Lcd.setTextSize(3); 
+  }; 
+  if(currentProperty == 2){    
     if(currentSetTank =="zbiornik A") M5.Lcd.printf("%.0f",tankA.width);
     if(currentSetTank =="zbiornik B") M5.Lcd.printf("%.0f",tankB.width);
     if(currentSetTank =="zbiornik C") M5.Lcd.printf("%.0f",tankC.width);     
     if(page == 1) M5.Lcd.printf(" m"); 
   } 
-  if(currentProperty == 3){
-    M5.Lcd.printf("dlugosc"); 
-    if(page == 2) M5.Lcd.printf("(m)");       
-    if(page == 1) M5.Lcd.setCursor(205, 160);
-    if(page == 2) M5.Lcd.setCursor(80, 140);
-    M5.Lcd.setTextSize(2);  
-    if(page == 2) M5.Lcd.setTextSize(3);  
+  if(currentProperty == 3){    
     if(currentSetTank =="zbiornik A") M5.Lcd.printf("%.0f",tankA.length);
     if(currentSetTank =="zbiornik B") M5.Lcd.printf("%.0f",tankB.length);
     if(currentSetTank =="zbiornik C") M5.Lcd.printf("%.0f",tankC.length);
     if(page == 1) M5.Lcd.printf(" m");      
   }
-  if(currentProperty == 4){     
-    M5.Lcd.printf("poziom wody");
-    if(page == 2) M5.Lcd.printf("(m)");    
-    if(page == 1) M5.Lcd.setCursor(205, 160);
-    if(page == 2) M5.Lcd.setCursor(80, 140);
-    M5.Lcd.setTextSize(2);
-    if(page == 2) M5.Lcd.setTextSize(3);    
+  if(currentProperty == 4){
     if(currentSetTank =="zbiornik A") M5.Lcd.printf("%.2f",tankA.waterHeight);
     if(currentSetTank =="zbiornik B") M5.Lcd.printf("%.2f",tankB.waterHeight);
     if(currentSetTank =="zbiornik C") M5.Lcd.printf("%.2f",tankC.waterHeight); 
     if(page == 1) M5.Lcd.printf(" m");     
   }
-  if(currentProperty == 5){ 
-    M5.Lcd.printf("doplyw"); 
-    if(page == 2) M5.Lcd.printf("(m^3/s)");   
-    if(page == 1) M5.Lcd.setCursor(205, 160);
-    if(page == 2) M5.Lcd.setCursor(80, 140);
-    M5.Lcd.setTextSize(2);    
-    if(page == 2) M5.Lcd.setTextSize(3); 
+  if(currentProperty == 5){    
     if(currentSetTank =="zbiornik A") M5.Lcd.printf("%.3f",tankA.waterSupply);
     if(currentSetTank =="zbiornik B") M5.Lcd.printf("%.3f",tankB.waterSupply); 
     if(currentSetTank =="zbiornik C") M5.Lcd.printf("%.3f",tankC.waterSupply);      
   }
-  if(currentProperty == 6){ 
-    M5.Lcd.printf("powierzchnia"); 
-    if(page == 2) M5.Lcd.printf("(m^2)");   
-    if(page == 1) M5.Lcd.setCursor(205, 160);
-    if(page == 2) M5.Lcd.setCursor(80, 140);
-    M5.Lcd.setTextSize(2);    
-    if(page == 2) M5.Lcd.setTextSize(3);
+  if(currentProperty == 6){
     if(currentSetTank =="zbiornik A") M5.Lcd.printf("%.3f",tankA.waterDrainSurface);
     if(currentSetTank =="zbiornik B") M5.Lcd.printf("%.3f",tankB.waterDrainSurface); 
     if(currentSetTank =="zbiornik C") M5.Lcd.printf("%.3f",tankC.waterDrainSurface);      
   } 
-  if(currentProperty == 7){ 
-    M5.Lcd.printf("ilosc wody");
-    if(page == 2) M5.Lcd.printf("(m^3)");    
-    if(page == 1) M5.Lcd.setCursor(205, 160);
-    if(page == 2) M5.Lcd.setCursor(80, 140);
-    M5.Lcd.setTextSize(2);   
-    if(page == 2) M5.Lcd.setTextSize(3); 
+  if(currentProperty == 7){
     if(currentSetTank =="zbiornik A") M5.Lcd.printf("%.2f",tankA.waterQuantity);
     if(currentSetTank =="zbiornik B") M5.Lcd.printf("%.2f",tankB.waterQuantity);
     if(currentSetTank =="zbiornik C") M5.Lcd.printf("%.2f",tankC.waterQuantity);      
   }
   if(currentProperty == 8){ 
-    M5.Lcd.printf("odplyw"); 
-    if(page == 2) M5.Lcd.printf("(m^3/s)");   
-    if(page == 1) M5.Lcd.setCursor(205, 160);
-    if(page == 2) M5.Lcd.setCursor(80, 140);
-    M5.Lcd.setTextSize(2); 
-    if(page == 2) M5.Lcd.setTextSize(3);   
     if(currentSetTank =="zbiornik A") M5.Lcd.printf("%.3f",tankA.waterDrain);
     if(currentSetTank =="zbiornik B") M5.Lcd.printf("%.3f",tankB.waterDrain);
     if(currentSetTank =="zbiornik C") M5.Lcd.printf("%.3f",tankC.waterDrain);      
