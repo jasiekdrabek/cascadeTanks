@@ -41,10 +41,8 @@ testem.log
 .DS_Store
 Thumbs.db
 
-#firebase
-.firebase
-.firebaserc
-firebase.json
+#database
+*.db
 
 esp32.svd
 debug.cfg
