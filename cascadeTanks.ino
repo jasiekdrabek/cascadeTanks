@@ -15,7 +15,7 @@ const  char* wifiNames[4] = {"Laby", "Dom", "Tel", "Brak"};
 
 const char* ssid [3]= {"TP-Link_8460", "CyberMax@D2", "AndroidAP5F48"};
 const char* password [3]= {"33213583", "staszek66", "izmn3987"};
-const char* mqtt_server = "broker.mqttdashboard.com";
+const char* mqtt_server = "test.mosquitto.org";
 
 #define MSG_BUFFER_SIZE (50)
 char msg[MSG_BUFFER_SIZE];
@@ -250,9 +250,9 @@ void pressNextBtn(Event& e){
     }
     return;
   }   
-  if (!isSetTankAHeight) {isSetTankAHeight = true; if(isWiFiConnected) {sprintf(msg, "%d", tankA.height);client.publish("PiR/175304/TankA/Height",msg);} currentSet = "szerokosc"; return;}
-  if (!isSetTankAWidth) {isSetTankAWidth = true; if(isWiFiConnected) {sprintf(msg, "%d", tankA.width);client.publish("PiR/175304/TankA/Width",msg);} currentSet = "dlugosc"; return;}
-  if (!isSetTankALength){isSetTankALength = true; if(isWiFiConnected) {sprintf(msg, "%d", tankA.length);client.publish("PiR/175304/TankA/Length",msg);}  currentSet = "poziom wody"; return;}
+  if (!isSetTankAHeight) {isSetTankAHeight = true; if(isWiFiConnected) {sprintf(msg, "%f", tankA.height);client.publish("PiR/175304/TankA/Height",msg);} currentSet = "szerokosc"; return;}
+  if (!isSetTankAWidth) {isSetTankAWidth = true; if(isWiFiConnected) {sprintf(msg, "%f", tankA.width);client.publish("PiR/175304/TankA/Width",msg);} currentSet = "dlugosc"; return;}
+  if (!isSetTankALength){isSetTankALength = true; if(isWiFiConnected) {sprintf(msg, "%f", tankA.length);client.publish("PiR/175304/TankA/Length",msg);}  currentSet = "poziom wody"; return;}
   if (!isSetTankAWaterHeight){    
     isSetTankAWaterHeight = true;
     if(isWiFiConnected) {sprintf(msg, "%f", tankA.waterHeight);client.publish("PiR/175304/TankA/WaterHeight",msg);}
@@ -263,9 +263,9 @@ void pressNextBtn(Event& e){
      return;}
   if (!isSetTankAWaterSupply){isSetTankAWaterSupply = true; if(isWiFiConnected) {sprintf(msg, "%f", tankA.waterSupply);client.publish("PiR/175304/TankA/WaterSupply",msg);} tankA.previousWaterSupply = tankA.waterSupply; tankA.waterSupplyValve1In = tankA.waterSupply;  currentSet = "powierzchnia odpływu wody"; return;}
   if (!isSetTankAWaterDrainSurface){isSetTankAWaterDrainSurface = true; if(isWiFiConnected) {sprintf(msg, "%f", tankA.waterDrainSurface);client.publish("PiR/175304/TankA/WaterDrainSurface",msg);} tankA.previousWaterDrainSurface = tankA.waterDrainSurface; currentSet = "wysokosc"; currentSetTank="zbiornik B"; return;}
-  if (!isSetTankBHeight) {isSetTankBHeight = true; if(isWiFiConnected) {sprintf(msg, "%d", tankB.height);client.publish("PiR/175304/TankB/Height",msg);} currentSet = "szerokosc"; return;}
-  if (!isSetTankBWidth) {isSetTankBWidth = true; if(isWiFiConnected) {sprintf(msg, "%d", tankB.width);client.publish("PiR/175304/TankB/Width",msg);} currentSet = "dlugosc"; return;}
-  if (!isSetTankBLength){isSetTankBLength = true; if(isWiFiConnected) {sprintf(msg, "%d", tankB.length);client.publish("PiR/175304/TankB/Length",msg);} currentSet = "poziom wody"; return;}
+  if (!isSetTankBHeight) {isSetTankBHeight = true; if(isWiFiConnected) {sprintf(msg, "%f", tankB.height);client.publish("PiR/175304/TankB/Height",msg);} currentSet = "szerokosc"; return;}
+  if (!isSetTankBWidth) {isSetTankBWidth = true; if(isWiFiConnected) {sprintf(msg, "%f", tankB.width);client.publish("PiR/175304/TankB/Width",msg);} currentSet = "dlugosc"; return;}
+  if (!isSetTankBLength){isSetTankBLength = true; if(isWiFiConnected) {sprintf(msg, "%f", tankB.length);client.publish("PiR/175304/TankB/Length",msg);} currentSet = "poziom wody"; return;}
   if (!isSetTankBWaterHeight){
     isSetTankBWaterHeight = true;
     if(isWiFiConnected) {sprintf(msg, "%f", tankB.waterHeight);client.publish("PiR/175304/TankB/WaterHeight",msg);}
@@ -275,9 +275,9 @@ void pressNextBtn(Event& e){
     return;}
   if (!isSetTankBWaterSupply){isSetTankBWaterSupply = true; if(isWiFiConnected) {sprintf(msg, "%f", tankB.waterSupply);client.publish("PiR/175304/TankB/WaterSupply",msg);} tankB.previousWaterSupply = tankB.waterSupply; tankB.waterSupplyValve1In = tankB.waterSupply; currentSet = "powierzchnia odpływu wody"; return;}
   if (!isSetTankBWaterDrainSurface){isSetTankBWaterDrainSurface = true; if(isWiFiConnected) {sprintf(msg, "%f", tankB.waterDrainSurface);client.publish("PiR/175304/TankB/WaterDrainSurface",msg);} tankB.previousWaterDrainSurface = tankB.waterDrainSurface; currentSet = "wysokosc"; currentSetTank="zbiornik C"; return;}
-  if (!isSetTankCHeight) {isSetTankCHeight = true; if(isWiFiConnected) {sprintf(msg, "%d", tankC.height);client.publish("PiR/175304/TankC/Height",msg);} currentSet = "szerokosc"; return;}
-  if (!isSetTankCWidth) {isSetTankCWidth = true; if(isWiFiConnected) {sprintf(msg, "%d", tankC.width);client.publish("PiR/175304/TankC/Width",msg);} currentSet = "dlugosc"; return;}
-  if (!isSetTankCLength){isSetTankCLength = true; if(isWiFiConnected) {sprintf(msg, "%d", tankC.length);client.publish("PiR/175304/TankC/Length",msg);}  currentSet = "poziom wody"; return;}
+  if (!isSetTankCHeight) {isSetTankCHeight = true; if(isWiFiConnected) {sprintf(msg, "%f", tankC.height);client.publish("PiR/175304/TankC/Height",msg);} currentSet = "szerokosc"; return;}
+  if (!isSetTankCWidth) {isSetTankCWidth = true; if(isWiFiConnected) {sprintf(msg, "%f", tankC.width);client.publish("PiR/175304/TankC/Width",msg);} currentSet = "dlugosc"; return;}
+  if (!isSetTankCLength){isSetTankCLength = true; if(isWiFiConnected) {sprintf(msg, "%f", tankC.length);client.publish("PiR/175304/TankC/Length",msg);}  currentSet = "poziom wody"; return;}
   if (!isSetTankCWaterHeight){
     isSetTankCWaterHeight = true;
     isSetTankCWaterSupply = true;
