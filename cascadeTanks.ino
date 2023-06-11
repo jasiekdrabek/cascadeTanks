@@ -71,8 +71,8 @@ unsigned long CarryOnPresetTaskTime = millis();
 int alarmCount = 0;
 
 int currentProperty = 1; //1-> wysokosc, 2->szerokosc, 3-> dlugosc, 4-> wysokosc wody, 5->doplyw wody, 6->powierzchnia odplywu, 7-> ilosc wody, 8-> odplyw wody  
-int cascadeType; // 1- A->B->C ; 2 - A->C B->C 
-const char* propertyNames[8]={"wysokosc", "szerokosc", "dlugosc", "wysokosc wody", "doplyw", "powierzchnia", "ilosc wody", "odplyw"};
+int cascadeType = 2; // 1- A->B->C ; 2 - A->C B->C 
+const char* propertyNames[8]={"wysokosc", "szerokosc", "dlugosc", "poziom wody", "doplyw", "powierzchnia", "ilosc wody", "odplyw"};
 int page = 1; // 1->mainscreen; 2->detailscreen
 int mode = 1; // 1 - carries out task from attached file "wyklad_USCtankC.valve1In_.pdf"; 2- carries out task from attached file "Tryb pracy 2.pdf"; 3 - user sets all parameters by himself/herself   
 
@@ -226,6 +226,7 @@ void pressNextBtn(Event& e){
   if(!isWiFiChosen){
     isWiFiChosen = true;
     currentSet = "Wybierz tryb pracy";
+    setupWifi();
     return;
   }  
   if(!isSetMode) {
@@ -293,7 +294,7 @@ void pressNextBtn(Event& e){
 }
 
 void setupToStart(){
-      isWiFiChosen = false;
+    isWiFiChosen = false;
     isSetCascadeType = false;
     isSetTankAHeight = false;
     isSetTankAWidth = false;
@@ -336,6 +337,7 @@ void pressResetBtn(Event& e){
   isWiFiConnected = false;
   WiFi.disconnect();    
   resetToDefault();
+  currentSet = "Wybierz WiFi";
 }
 
 void resetToDefault(){
@@ -352,7 +354,7 @@ void resetToDefault(){
   downBtn.setLabel("");
   resetBtn.setLabel("");
   currentSetTank = "zbiornik A";
-  currentSet = "Wybierz WiFi";
+  currentSet = "Wybierz tryb pracy";  
   currentProperty = 1;
   cascadeType = -1;
   page = 1; 
@@ -413,25 +415,32 @@ void pressMinus2Btn(Event& e ){
   if(currentProperty == 5){
     if(currentSetTank == "zbiornik A"){
       tankA.waterSupply = (AreSame(tankA.waterSupply, 0)) ? 0.00 : tankA.waterSupply - 0.01;
-      tankA.waterSupply = (tankA.waterSupply < 0) ? 0 : tankA.waterSupply;   
+      tankA.waterSupply = (tankA.waterSupply < 0) ? 0 : tankA.waterSupply;
+      tankA.waterSupplyValve1In = tankA.waterSupply; 
+      if(isWiFiConnected) {sprintf(msg, "%f", tankA.waterSupply);client.publish("PiR/175304/TankA/WaterSupply",msg);}        
     }  
     if(currentSetTank == "zbiornik B" && cascadeType == 2){
       tankB.waterSupply = (AreSame(tankB.waterSupply, 0)) ? 0.00 : tankB.waterSupply - 0.01; 
       tankB.waterSupply = (tankB.waterSupply < 0) ? 0 : tankB.waterSupply;
+      tankB.waterSupplyValve1In = tankB.waterSupply;
+      if(isWiFiConnected) {sprintf(msg, "%f", tankB.waterSupply);client.publish("PiR/175304/TankB/WaterSupply",msg);} 
     }  
   }
   if(currentProperty == 6){
     if(currentSetTank == "zbiornik A"){
       tankA.waterDrainSurface = (AreSame(tankA.waterDrainSurface, 0)) ? 0.00 : tankA.waterDrainSurface - 0.01;
-      tankA.waterDrainSurface = (tankA.waterDrainSurface < 0) ? 0.00 : tankA.waterDrainSurface;            
+      tankA.waterDrainSurface = (tankA.waterDrainSurface < 0) ? 0.00 : tankA.waterDrainSurface;  
+      if(isWiFiConnected) {sprintf(msg, "%f", tankA.waterDrainSurface);client.publish("PiR/175304/TankA/WaterDrainSurface",msg);}          
     } 
     if(currentSetTank == "zbiornik B"){
       tankB.waterDrainSurface = (AreSame(tankB.waterDrainSurface, 0)) ? 0.00 : tankB.waterDrainSurface - 0.01;
-      tankB.waterDrainSurface = (tankB.waterDrainSurface < 0) ? 0.00 : tankB.waterDrainSurface;      
+      tankB.waterDrainSurface = (tankB.waterDrainSurface < 0) ? 0.00 : tankB.waterDrainSurface;    
+      if(isWiFiConnected) {sprintf(msg, "%f", tankB.waterDrainSurface);client.publish("PiR/175304/TankB/WaterDrainSurface",msg);}   
     } 
     if(currentSetTank == "zbiornik C"){
       tankC.waterDrainSurface = (AreSame(tankC.waterDrainSurface, 0)) ? 0.00 : tankC.waterDrainSurface - 0.01; 
-      tankC.waterDrainSurface = (tankC.waterDrainSurface < 0) ? 0.00 : tankC.waterDrainSurface;        
+      tankC.waterDrainSurface = (tankC.waterDrainSurface < 0) ? 0.00 : tankC.waterDrainSurface;  
+      if(isWiFiConnected) {sprintf(msg, "%f", tankC.waterDrainSurface);client.publish("PiR/175304/TankC/WaterDrainSurface",msg);}       
     } 
   }
 }  
@@ -441,13 +450,21 @@ void pressPlus2Btn(Event& e ){
   //draw rect where value is on screen to aviod overlap
   M5.Lcd.fillRoundRect(50, 80, 220, 80,15, LIGHTGREY) ;
   if(currentProperty == 5){
-    if(currentSetTank == "zbiornik A") {tankA.waterSupply = (AreSame(tankA.waterSupply, 0.1)) ? 0.10 : tankA.waterSupply + 0.01; tankA.waterSupplyValve1In = tankA.waterSupply;} 
-    if(currentSetTank == "zbiornik B"  && cascadeType == 2) {tankB.waterSupply = (AreSame(tankB.waterSupply, 0.1)) ? 0.10 : tankB.waterSupply + 0.01; tankB.waterSupplyValve1In = tankB.waterSupply;}   
+    if(currentSetTank == "zbiornik A") {
+      tankA.waterSupply = (AreSame(tankA.waterSupply, 0.1)) ? 0.10 : tankA.waterSupply + 0.01;
+      tankA.waterSupplyValve1In = tankA.waterSupply;
+      if(isWiFiConnected) {sprintf(msg, "%f", tankA.waterSupply);client.publish("PiR/175304/TankA/WaterSupply",msg);}
+      } 
+    if(currentSetTank == "zbiornik B"  && cascadeType == 2) {
+      tankB.waterSupply = (AreSame(tankB.waterSupply, 0.1)) ? 0.10 : tankB.waterSupply + 0.01;
+      tankB.waterSupplyValve1In = tankB.waterSupply;
+      if(isWiFiConnected) {sprintf(msg, "%f", tankB.waterSupply);client.publish("PiR/175304/TankB/WaterSupply",msg);}      
+      }   
   }
   if(currentProperty == 6){
-    if(currentSetTank == "zbiornik A") tankA.waterDrainSurface = (AreSame(tankA.waterDrainSurface, 0.2)) ? 0.2 : tankA.waterDrainSurface + 0.01; 
-    if(currentSetTank == "zbiornik B") tankB.waterDrainSurface = (AreSame(tankB.waterDrainSurface, 0.2)) ? 0.2 : tankB.waterDrainSurface + 0.01;
-    if(currentSetTank == "zbiornik C") tankC.waterDrainSurface = (AreSame(tankC.waterDrainSurface, 0.2)) ? 0.2 : tankC.waterDrainSurface + 0.01;
+    if(currentSetTank == "zbiornik A") {tankA.waterDrainSurface = (AreSame(tankA.waterDrainSurface, 0.2)) ? 0.2 : tankA.waterDrainSurface + 0.01; if(isWiFiConnected) {sprintf(msg, "%f", tankA.waterDrainSurface);client.publish("PiR/175304/TankA/WaterDrainSurface",msg);}} 
+    if(currentSetTank == "zbiornik B") {tankB.waterDrainSurface = (AreSame(tankB.waterDrainSurface, 0.2)) ? 0.2 : tankB.waterDrainSurface + 0.01; if(isWiFiConnected) {sprintf(msg, "%f", tankB.waterDrainSurface);client.publish("PiR/175304/TankB/WaterDrainSurface",msg);}}
+    if(currentSetTank == "zbiornik C") {tankC.waterDrainSurface = (AreSame(tankC.waterDrainSurface, 0.2)) ? 0.2 : tankC.waterDrainSurface + 0.01; if(isWiFiConnected) {sprintf(msg, "%f", tankC.waterDrainSurface);client.publish("PiR/175304/TankC/WaterDrainSurface",msg);}}
   }
 }
 
@@ -707,7 +724,7 @@ void taskCalculateWaterFlow(void* pvParameters){
           tankAlarm(&tankA, 0.9, 0.7);
           if(cascadeType == 1){
              tankB.waterSupplyValve1In = tankA.waterDrain;                     
-         }        
+          }        
           tankWaterFlow(&tankB);
           //Serial.printf("%d,%f,%d \n", millis() - startTaskTime, tankB.waterHeight, tankB.state); //for tests
           tankAlarm(&tankB, 0.9, 0.7);
@@ -1006,34 +1023,22 @@ void setupWifi() {
   if (WiFi.status() != WL_CONNECTED) isWiFiConnected = false; else isWiFiConnected = true;  
 }
 
-void mqtt_callback(char* topic, byte* payload, unsigned int length) { 
-  if(strcmp(topic,"PiR/175304/TankA/SetupRetain") == 0){
-    char * msgStr = (char*) payload;
-    char delim[] = " ";
-	  char *ptr = strtok(msgStr, delim);
-    char *eptr;
-    int i = 0;
-	  while (ptr != NULL){            
-      if (i == 0)tankA.height = atoi(ptr);
-		  if (i == 1)tankA.width = atoi(ptr);
-      if (i == 2)tankA.length = atoi(ptr);
-      ptr = strtok(NULL, delim);
-      i += 1;
-	  }    
-  }
+void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if(strcmp(topic,"PiR/175304/TankA/ChangeingValues") == 0){
     char * msgStr = (char*) payload;
     char delim[] = " ";
 	  char *ptr = strtok(msgStr, delim);
     char *eptr;
     int i = 0;
-	  while (ptr != NULL){     
+	  while (ptr != NULL){   
       if (i == 0)tankA.waterHeight = strtod(ptr, &eptr);
 		  if (i == 1)tankA.waterSupply = strtod(ptr, &eptr);
       if (i == 2)tankA.waterDrainSurface = strtod(ptr, &eptr);
       if (i == 3)tankA.waterQuantity = strtod(ptr, &eptr);
       if (i == 4)tankA.waterDrain = strtod(ptr, &eptr);
       if (i == 5)tankA.state = atoi(ptr);
+      if (i == 6)tankA.valve1In = atoi(ptr);
+      if (i == 7)tankA.valveOut = atoi(ptr);     
       ptr = strtok(NULL, delim);
       i += 1;
     }
@@ -1044,7 +1049,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 	  char *ptr = strtok(msgStr, delim);
     char *eptr;
     int i = 0;
-	  while (ptr != NULL){      
+	  while (ptr != NULL){            
       if (i == 0)tankA.height = atoi(ptr);
 		  if (i == 1)tankA.width = atoi(ptr);
       if (i == 2)tankA.length = atoi(ptr);
@@ -1054,20 +1059,6 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       if (i == 6)tankA.waterQuantity = strtod(ptr, &eptr);
       if (i == 7)tankA.waterDrain = strtod(ptr, &eptr);
       if (i == 8)tankA.state = atoi(ptr);
-      ptr = strtok(NULL, delim);
-      i += 1;
-	  }    
-  }  
-  if(strcmp(topic,"PiR/175304/TankB/SetupRetain") == 0){
-    char * msgStr = (char*) payload;
-    char delim[] = " ";
-	  char *ptr = strtok(msgStr, delim);
-    char *eptr;
-    int i = 0;
-	  while (ptr != NULL){      
-      if (i == 0)tankB.height = atoi(ptr);
-		  if (i == 1)tankB.width = atoi(ptr);
-      if (i == 2)tankB.length = atoi(ptr);
       ptr = strtok(NULL, delim);
       i += 1;
 	  }    
@@ -1085,6 +1076,8 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       if (i == 3)tankB.waterQuantity = strtod(ptr, &eptr);
       if (i == 4)tankB.waterDrain = strtod(ptr, &eptr);
       if (i == 5)tankB.state = atoi(ptr);
+      if (i == 6)tankB.valve1In = atoi(ptr);
+      if (i == 7)tankB.valveOut = atoi(ptr);
       ptr = strtok(NULL, delim);
       i += 1;
     }
@@ -1109,20 +1102,6 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       i += 1;
 	  }    
   }
-  if(strcmp(topic,"PiR/175304/TankC/SetupRetain") == 0){
-    char * msgStr = (char*) payload;
-    char delim[] = " ";
-	  char *ptr = strtok(msgStr, delim);
-    char *eptr;
-    int i = 0;
-	  while (ptr != NULL){     
-      if (i == 0)tankC.height = atoi(ptr);
-		  if (i == 1)tankC.width = atoi(ptr);
-      if (i == 2)tankC.length = atoi(ptr);
-      ptr = strtok(NULL, delim);
-      i += 1;
-	  }    
-  }
   if(strcmp(topic,"PiR/175304/TankC/ChangeingValues") == 0){
     char * msgStr = (char*) payload;
     char delim[] = " ";
@@ -1136,6 +1115,9 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       if (i == 3)tankC.waterQuantity = strtod(ptr, &eptr);
       if (i == 4)tankC.waterDrain = strtod(ptr, &eptr);
       if (i == 5)tankC.state = atoi(ptr);
+      if (i == 6)tankC.valve1In = atoi(ptr);
+      if (i == 7)tankC.valve2In = atoi(ptr);     
+      if (i == 8)tankC.valveOut = atoi(ptr);
       ptr = strtok(NULL, delim);
       i += 1;
     }
@@ -1161,24 +1143,36 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 	  }    
   }
   if(strcmp(topic,"PiR/175304/Reset") == 0){
-    resetToDefault();  
-    drawBtns = true;   
+    if(!isReset){    
+    resetToDefault();
+    isWiFiChosen = true; 
+    } 
   } 
   if(strcmp(topic,"PiR/175304/Setup") == 0){
+    if(isReset){
     setupToStart();
-    drawBtns = true; 
-    drawTank = true;
+    cascadeType = 2;
+    }    
   }
   if(strcmp(topic,"PiR/175304/SetCurrentTank") == 0){
-    currentSetTank = (char*) payload;
+    char subbuff[11];
+    char* buff = (char*) payload;
+    memcpy( subbuff, &buff[0], 10 );
+    subbuff[10] = '\0';
+    currentSetTank = (char*) subbuff;
+    M5.Lcd.clearDisplay();    
     drawBtns = true; 
     drawTank = true;
   }
   if(strcmp(topic,"PiR/175304/SetCurrentProperty") == 0){
-    currentProperty = atoi((char*) payload);
+    currentProperty = int( payload[0]) - 48;
+    if(page == 1) M5.Lcd.fillRoundRect(200,100, 120, 90,15, LIGHTGREY) ; 
+    if(page == 2) M5.Lcd.fillRoundRect(50, 80, 220, 80,15, LIGHTGREY) ;
+    if(page == 2) M5.Lcd.fillRect(0, 35, 320, 40, BLACK) ;
   }
   if(strcmp(topic,"PiR/175304/SetCurrentPage") == 0){
-    page = atoi((char*) payload);
+    page = int(payload[0]) - 48;   
+    M5.Lcd.clear(); 
     drawBtns = true; 
     if(page == 1)drawTank = true;
   }   
@@ -1226,12 +1220,10 @@ void setup() {
 
 void loop() {
   M5.update();
-  if (isWiFiConnected && isWiFiChosen){
+  if (isWiFiConnected){  
     if (!client.connected()) { reConnect(); } // MQTT reconect
     client.loop();
-  }else if(chosenWiFi != 3 && isWiFiChosen){
-    setupWifi(); //WiFi reconect
-  }  
+  } 
   if(isReset){    
     if(drawBtns && (isSetCascadeType || !isSetMode || !isWiFiChosen)) drawOtherSetBtns();
     if(!isWiFiChosen) displaySettingWiFi(chosenWiFi);
