@@ -226,7 +226,7 @@ void pressNextBtn(Event& e){
   if(!isWiFiChosen){
     isWiFiChosen = true;
     currentSet = "Wybierz tryb pracy";
-    setupWifi();
+    if (chosenWiFi != 3) setupWifi();
     return;
   }  
   if(!isSetMode) {
@@ -1015,12 +1015,19 @@ void switchCaseForMode2(){
 void setupWifi() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid[chosenWiFi], password[chosenWiFi]);
+  M5.lcd.setCursor(0,40);
+  M5.Lcd.printf("connecting to wifi...");
   int numberOfConnecions = 0;
   while (WiFi.status() != WL_CONNECTED && numberOfConnecions < 5) {
-    delay(2000);
+    delay(1000);
     numberOfConnecions +=1;
   }
-  if (WiFi.status() != WL_CONNECTED) isWiFiConnected = false; else isWiFiConnected = true;  
+  M5.Lcd.clearDisplay();
+  M5.lcd.setCursor(0,40);
+  if (WiFi.status() != WL_CONNECTED) {isWiFiConnected = false;M5.Lcd.printf("wifi not connected");} else {isWiFiConnected = true; M5.Lcd.printf("wifi connected");}  
+  delay(1000);
+  M5.Lcd.clearDisplay();
+    
 }
 
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {
